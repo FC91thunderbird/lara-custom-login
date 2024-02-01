@@ -55,7 +55,6 @@ class UsersController extends Controller
             if(!$user){
                 return redirect()->back()->withErrors('User Not Update');
             }
-            // return redirect()->route('users.index')->with('success', 'Record updated successfully!');
             return redirect()->route('users.index')->withSuccess("User updated");
         }catch(\Exception $e){
             return redirect()->back()->withErrors('User Not Update..');

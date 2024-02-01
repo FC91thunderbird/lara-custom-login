@@ -16,17 +16,6 @@ class PermissionController extends Controller
         return view('pages.permission.permissions', compact('permissions'));
     }
 
-    /**
-     * Show the form for creating a new resource.
-     */
-    public function create()
-    {
-        //
-    }
-
-    /**
-     * Store a newly created resource in storage.
-     */
     public function store(PermissionAdd $request)
     {
         try{
@@ -56,9 +45,6 @@ class PermissionController extends Controller
         }
     }
 
-    /**
-     * Remove the specified resource from storage.
-     */
     public function destroy(string $id)
     {
         $permission = Permission::find($id);

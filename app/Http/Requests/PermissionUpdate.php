@@ -24,7 +24,7 @@ class PermissionUpdate extends FormRequest
     public function rules(): array
     {
         return [
-            'name' => 'required|unique:permissions,name,'. $this->route('permission'),
+            'name' => 'required|regex:/^[a-zA-Z]+$/u|unique:permissions,name,'. $this->route('permission'),
         ];
     }
 }

@@ -57,6 +57,7 @@
                 if (res.success) {
                     modal.find('form')[0].reset();
                     modal.modal('hide');
+                    toastr.success(res.message);
                     $('#roleTable').load(location.href+' #roleTable');
                 }
             },
@@ -80,6 +81,7 @@
             success: function(res) {
                 if (res.success) {
                     modal.modal('hide')
+                    toastr.success(res.message);
                     $("#roleTable").load(location.href+ " #roleTable")
                     modal.find('#nameError').text('')
                 }
