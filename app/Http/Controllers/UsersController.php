@@ -28,7 +28,6 @@ class UsersController extends Controller
         try {
             $user = User::create($request->validated());
 
-            // auth()->login($user);
             if(!$user){
                 return redirect()->route('users.create')->withSuccess('User Not Saved');
             }
@@ -70,6 +69,5 @@ class UsersController extends Controller
         }catch(\Exception $e){
             return redirect()->back()->withErrors('User Not Deleted');
         }
-
     }
 }

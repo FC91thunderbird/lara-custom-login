@@ -1,0 +1,220 @@
+
+//////////  Validation Rules
+
+function formValidate(){
+    $input = $this->all();
+
+    if(isset($input['name'])){
+        $input['name'] = preg_replace('/[^a-zA-Z0-9\s]/','',$input['name']);
+        $input['name'] = trim($input['name']);
+    }
+    
+    if(isset($input['username'])){
+        $input['username'] = preg_replace('/[^a-zA-Z0-9\s]/','',$input['username']);
+        $input['username'] = trim($input['username']);
+    }
+
+    return $this->replace($input);
+}
+
+public function rules(): array
+{
+    return [
+        'name' => 'required|unique:users,name',
+        'username' => 'required|unique:users,username',
+        'email'=> 'required|unique:users,email',
+        'password' => 'required|min:6',
+        'password_confirm' => 'required|same:password',
+        'roleId'=> 'required|numeric'
+    ];
+}
+
+
+/////////   Controller
+
+public function index()
+    {
+        $users = User::with('roles')->orderBy('id','desc')->paginate(10);
+        return view('pages.users.users', compact('users'));
+    }
+    
+    
+    public function create()
+    {
+        $roles = Role::orderBy('name','asc')->get();
+        return view('pages.users.addOrUpdate', compact('roles'));
+    }
+
+    public function store(UserAdd $request)
+    {
+        try {
+            $user = User::create($request->validated());
+
+            if(!$user){
+                return redirect()->route('users.create')->withSuccess('User Not Saved');
+            }
+
+            return redirect()->route('users.index')->withSuccess("User Saved successfully.");
+        } catch (\Exception $e) {
+            return redirect()->back()->withErrors('User Not created');
+        }
+    }
+   
+ 
+    public function edit(User $user)
+    {
+        $roles = Role::orderBy('name','asc')->get();
+        return view('pages.users.addOrUpdate', compact('user','roles'));
+    }
+
+
+    public function update(UserUpdate $request, User $user)
+    {
+        try{
+            $user = $user->update($request->validated());
+
+            if(!$user){
+                return redirect()->back()->withErrors('User Not Update');
+            }
+            return redirect()->route('users.index')->withSuccess("User updated");
+        }catch(\Exception $e){
+            return redirect()->back()->withErrors('User Not Update..');
+        }
+    }
+
+    public function destroy(string $id)
+    {
+        try{
+            $user = User::find($id);
+            $user->delete();
+            return redirect()->route('users.index')->withSuccess('User Deleted');
+        }catch(\Exception $e){
+            return redirect()->back()->withErrors('User Not Deleted');
+        }
+    }
+
+
+/////////// Views
+
+<td> <a href="{{ route('users.edit', $user->id) }}" class="btn btn-sm btn-primary"> <i class="ti ti-pencil "></i> </a>
+    <form action="{{ route('users.destroy', $user->id ) }}" method="post" style="display: inline;">
+        @csrf
+        @method('DELETE')
+        <button type="submit" onclick="return confirm('Are you sure?')" class="btn btn-sm btn-danger"> <i class="ti ti-trash"></i></button>
+    </form>
+</td>
+
+////////// Ajax
+
+<td> <button class="btn btn-sm btn-primary" data-bs-toggle="modal" data-bs-target="#roleEdit{{ $role->id }}"> <i class="ti ti-pencil"></i> </button>
+    <form action="{{ route('roles.destroy', $role->id) }}" method="post" style="display: inline;">
+        @csrf
+        @method('DELETE')
+        <button type="submit" onclick="return confirm('Are you sure?')" class="btn btn-sm btn-danger"> <i class="ti ti-trash"></i> </button>
+    </form>
+    @include('pages.role.addUpdateModal')
+</td>
+
+
+
+///////////// Add Edit Form
+
+        @if(isset($user))
+            <form action="{{ route('users.update', $user->id) }}" method="post">
+            @method('PUT')
+        @else
+            <form action="{{ route('users.store') }}" method="post">
+        @endif
+                    @csrf
+
+
+        ///// Select Dropdown
+
+        <option value="">Select Role</option>
+        @foreach($roles as $role)
+        @if(isset($user))
+        <option value="{{ $role->id }}" {{ ($user->roleId === $role->id) ? 'selected' :'' }}> {{ ucfirst($role->name) }} </option>
+        @else
+        <option value="{{ $role->id }}" {{(old('roleId') === $role->id) ? 'selected':'' }}>{{ ucfirst($role->name) }}</option>
+        @endif
+        @endforeach
+
+
+    ///////// Show Error
+        @error('name') <span class="text-danger"> {{ $message }} </span> @enderror
+
+
+
+///////////// Ajax Script
+Add Header
+<script src="https://ajax.googleapis.com/ajax/libs/jquery/2.2.0/jquery.min.js"></script>
+
+
+<script>
+    $(document).on('click', '.addRole', function(){
+        var modal = $(this).closest('.modal')
+        var formData = modal.find('form').serialize();
+
+        $.ajax({
+            url: '{{ route("roles.store") }}',
+            method: 'post',
+            data: formData,
+            success: function(res) {
+                if (res.success) {
+                    modal.find('form')[0].reset();
+                    modal.modal('hide');
+                    toastr.success(res.message);
+                    $('#roleTable').load(location.href+' #roleTable');
+                }
+            },
+            error: function(error) {
+                console.log(error.responseJSON.errors)
+                $.each(error.responseJSON.errors, function(key, value) {
+                    modal.find('#' + key + 'Error').text(value[0]);
+                })
+            }
+        })
+    });
+
+    $(document).on('click', '.editRole', function() {
+        var modal = $(this).closest('.modal');
+        var formData = modal.find('form').serialize();
+
+        $.ajax({
+            url: '/admin/roles/' + modal.find('#id').val(),
+            method: 'PUT',
+            data: formData,
+            success: function(res) {
+                if (res.success) {
+                    modal.modal('hide')
+                    toastr.success(res.message);
+                    $("#roleTable").load(location.href+ " #roleTable")
+                    modal.find('#nameError').text('')
+                }
+            },
+            error: function(error) {
+                console.log(error.responseJSON.errors);
+                $.each(error.responseJSON.errors, function(key, value) {
+                    modal.find('#' + key + 'Errors').text(value[0]);
+                })
+            }
+        })
+    })
+</script>
+
+
+////////////  Toaster
+
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/toastr.js/latest/css/toastr.min.css">
+<script src="https://cdnjs.cloudflare.com/ajax/libs/toastr.js/latest/js/toastr.min.js"></script>
+
+  <!-- / Layout wrapper -->
+  @if(session('success'))
+    <script>
+        toastr.success("{{ session('success') }}", "Success", {
+            closeButton: true,
+            progressBar: true,
+        });
+    </script>
+@endif
+</body>

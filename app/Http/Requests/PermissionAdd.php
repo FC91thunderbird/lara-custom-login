@@ -28,7 +28,7 @@ class PermissionAdd extends FormRequest
     public function rules(): array
     {
         return [
-            'name' => 'required|regex:/^[a-zA-Z]+$/u|unique:permissions,name'
+            'name' => 'required|string|unique:permissions,name'
         ];
     }
 }
