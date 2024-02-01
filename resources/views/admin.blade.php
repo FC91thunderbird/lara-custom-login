@@ -47,7 +47,6 @@
 
           <!-- Footer -->
           @include('components.footer')
-          
           <!-- / Footer -->
 
         </div>
