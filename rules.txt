@@ -1,3 +1,24 @@
+Install Laravel 
+    - composer create-project laravel/laravel [project_name]
+
+composer install
+php artisan key:generate
+php artisan migrate
+php artisan db:seed
+php artisan serve
+
+composer require laravel/ui
+
+// Generate basic scaffolding...
+	php artisan ui bootstrap
+	php artisan ui vue
+	php artisan ui react
+
+// Generate login / registration scaffolding...
+	php artisan ui bootstrap --auth
+	php artisan ui vue --auth
+	php artisan ui react --auth
+
 
 //////////  Validation Rules
 
